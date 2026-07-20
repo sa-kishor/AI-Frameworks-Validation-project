@@ -1,0 +1,31 @@
+name: Validation CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install torch torchvision onnx onnxruntime onnxscript numpy pytest
+
+      - name: Generate baseline (PyTorch output)
+        run: python 01_pytorch_baseline.py
+
+      - name: Export to ONNX
+        run: python 02_export_onnx.py
+
+      - name: Run validation test suite
+        run: pytest test_validation.py -v
